@@ -1,0 +1,46 @@
+{
+  "name": "@macklinu/effect-otel",
+  "version": "0.0.0",
+  "description": "",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./Tracer": {
+      "types": "./dist/Tracer.d.ts",
+      "default": "./dist/Tracer.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "Mackie Underdown <macklinu@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/macklinu/effect-utils.git",
+    "directory": "packages/otel"
+  },
+  "peerDependencies": {
+    "@effect/opentelemetry": "^0.56.2",
+    "@effect/platform": "^0.90.3",
+    "effect": "^3.17.7"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.2",
+    "@effect/opentelemetry": "^0.56.2",
+    "@effect/platform": "^0.90.3",
+    "@effect/vitest": "^0.25.1",
+    "@total-typescript/tsconfig": "^1.0.4",
+    "effect": "^3.17.7",
+    "tsdown": "^0.14.1"
+  }
+}

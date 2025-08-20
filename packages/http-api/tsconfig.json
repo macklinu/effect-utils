@@ -1,0 +1,16 @@
+{
+  "extends": "@total-typescript/tsconfig/bundler/dom/library-monorepo",
+  "exclude": ["dist"],
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "namespaceImportPackages": [
+          "effect",
+          "@effect/platform",
+          "@effect/platform-node"
+        ]
+      }
+    ]
+  }
+}
