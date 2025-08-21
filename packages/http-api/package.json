@@ -36,12 +36,12 @@
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
-    "@effect/opentelemetry": "^0.56.2",
-    "@effect/platform": "^0.90.3",
+    "@effect/opentelemetry": "^0.56.4",
+    "@effect/platform": "^0.90.6",
     "@effect/platform-node": "^0.96.0",
     "@effect/vitest": "^0.25.1",
     "@total-typescript/tsconfig": "^1.0.4",
-    "effect": "^3.17.7",
+    "effect": "^3.17.8",
     "tsdown": "^0.14.1"
   }
 }

@@ -34,8 +34,9 @@
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
+    "@effect/vitest": "^0.25.1",
     "@total-typescript/tsconfig": "^1.0.4",
-    "effect": "^3.17.7",
+    "effect": "^3.17.8",
     "tsdown": "^0.14.1"
   }
 }
