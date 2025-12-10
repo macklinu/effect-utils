@@ -4,16 +4,26 @@
   "description": "",
   "type": "module",
   "exports": {
-    "./package.json": "./package.json",
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "@macklinu/source": "./src/index.ts",
+      "default": "./dist/index.mjs"
     },
     "./Logger": {
-      "types": "./dist/Logger.d.ts",
-      "default": "./dist/Logger.js"
+      "@macklinu/source": "./src/Logger.ts",
+      "default": "./dist/Logger.mjs"
+    },
+    "./*": "./*"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./Logger": "./dist/Logger.mjs",
+      "./*": "./*"
     }
   },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "files": [
     "dist"
   ],
@@ -30,13 +40,14 @@
     "directory": "packages/logger"
   },
   "peerDependencies": {
-    "effect": "^3.17.7"
+    "effect": "^3.19.10"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
-    "@effect/vitest": "^0.25.1",
+    "@effect/vitest": "^0.27.0",
+    "@macklinu/tsdown-config": "workspace:*",
     "@total-typescript/tsconfig": "^1.0.4",
-    "effect": "^3.17.8",
-    "tsdown": "^0.14.1"
+    "effect": "^3.19.10",
+    "tsdown": "^0.17.2"
   }
 }

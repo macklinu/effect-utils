@@ -4,16 +4,26 @@
   "description": "",
   "type": "module",
   "exports": {
-    "./package.json": "./package.json",
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "@macklinu/source": "./src/index.ts",
+      "default": "./dist/index.mjs"
     },
     "./TraceparentMiddleware": {
-      "types": "./dist/TraceparentMiddleware.d.ts",
-      "default": "./dist/TraceparentMiddleware.js"
+      "@macklinu/source": "./src/TraceparentMiddleware.ts",
+      "default": "./dist/TraceparentMiddleware.mjs"
+    },
+    "./*": "./*"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./TraceparentMiddleware": "./dist/TraceparentMiddleware.mjs",
+      "./*": "./*"
     }
   },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "files": [
     "dist"
   ],
@@ -30,18 +40,19 @@
     "directory": "packages/http-api"
   },
   "peerDependencies": {
-    "@effect/opentelemetry": "^0.56.2",
-    "@effect/platform": "^0.90.3",
-    "effect": "^3.17.7"
+    "@effect/opentelemetry": "^0.59.2",
+    "@effect/platform": "^0.93.6",
+    "effect": "^3.19.10"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
-    "@effect/opentelemetry": "^0.56.4",
-    "@effect/platform": "^0.90.6",
-    "@effect/platform-node": "^0.96.0",
-    "@effect/vitest": "^0.25.1",
+    "@effect/opentelemetry": "^0.59.2",
+    "@effect/platform": "^0.93.6",
+    "@effect/platform-node": "^0.103.0",
+    "@effect/vitest": "^0.27.0",
+    "@macklinu/tsdown-config": "workspace:*",
     "@total-typescript/tsconfig": "^1.0.4",
-    "effect": "^3.17.8",
-    "tsdown": "^0.14.1"
+    "effect": "^3.19.10",
+    "tsdown": "^0.17.2"
   }
 }

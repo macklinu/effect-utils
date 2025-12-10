@@ -1,6 +1,7 @@
 {
   "extends": "@total-typescript/tsconfig/bundler/no-dom/library-monorepo",
   "exclude": ["dist"],
+  "include": ["**/*"],
   "compilerOptions": {
     "plugins": [
       {
