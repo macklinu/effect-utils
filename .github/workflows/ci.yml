@@ -14,14 +14,13 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          run_install: false
+          run_install: |
+            - recursive: true
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Run linter
         run: pnpm lint
   typecheck:
@@ -33,14 +32,15 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          run_install: false
+          run_install: |
+            - recursive: true
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Build packages
+        run: pnpm build
       - name: Run type check
         run: pnpm typecheck
   test:
@@ -52,14 +52,13 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          run_install: false
+          run_install: |
+            - recursive: true
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Run tests
         run: pnpm test
   build:
@@ -71,13 +70,12 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          run_install: false
+          run_install: |
+            - recursive: true
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Build code
         run: pnpm build

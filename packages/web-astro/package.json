@@ -1,0 +1,74 @@
+{
+  "name": "@macklinu/effect-web-astro",
+  "version": "0.0.0",
+  "description": "Implementations for @macklinu/effect-web",
+  "type": "module",
+  "exports": {
+    ".": {
+      "@macklinu/source": "./src/index.ts",
+      "default": "./dist/index.mjs"
+    },
+    "./AstroRequestParams": {
+      "@macklinu/source": "./src/AstroRequestParams.ts",
+      "default": "./dist/AstroRequestParams.mjs"
+    },
+    "./AstroServerRequest": {
+      "@macklinu/source": "./src/AstroServerRequest.ts",
+      "default": "./dist/AstroServerRequest.mjs"
+    },
+    "./AstroServerResponse": {
+      "@macklinu/source": "./src/AstroServerResponse.ts",
+      "default": "./dist/AstroServerResponse.mjs"
+    },
+    "./EffectWebAstro": {
+      "@macklinu/source": "./src/EffectWebAstro.ts",
+      "default": "./dist/EffectWebAstro.mjs"
+    },
+    "./*": "./*"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./AstroRequestParams": "./dist/AstroRequestParams.mjs",
+      "./AstroServerRequest": "./dist/AstroServerRequest.mjs",
+      "./AstroServerResponse": "./dist/AstroServerResponse.mjs",
+      "./EffectWebAstro": "./dist/EffectWebAstro.mjs",
+      "./*": "./*"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "Mackie Underdown <macklinu@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/macklinu/effect-utils.git",
+    "directory": "packages/otel"
+  },
+  "peerDependencies": {
+    "@effect/platform": "^0.93.6",
+    "@macklinu/effect-web": "*",
+    "astro": "^5.16.5",
+    "effect": "^3.17.7"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.2",
+    "@effect/platform": "^0.93.6",
+    "@effect/vitest": "^0.27.0",
+    "@macklinu/effect-web": "workspace:*",
+    "@macklinu/tsdown-config": "workspace:*",
+    "@total-typescript/tsconfig": "^1.0.4",
+    "astro": "^5.16.5",
+    "effect": "^3.19.10",
+    "tsdown": "^0.17.2"
+  }
+}

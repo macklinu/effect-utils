@@ -1,0 +1,65 @@
+{
+  "name": "@macklinu/effect-web",
+  "version": "0.0.0",
+  "description": "Common services used when bridging web frameworks with Effect",
+  "type": "module",
+  "exports": {
+    ".": {
+      "@macklinu/source": "./src/index.ts",
+      "default": "./dist/index.mjs"
+    },
+    "./RequestParams": {
+      "@macklinu/source": "./src/RequestParams.ts",
+      "default": "./dist/RequestParams.mjs"
+    },
+    "./ServerRequest": {
+      "@macklinu/source": "./src/ServerRequest.ts",
+      "default": "./dist/ServerRequest.mjs"
+    },
+    "./ServerResponse": {
+      "@macklinu/source": "./src/ServerResponse.ts",
+      "default": "./dist/ServerResponse.mjs"
+    },
+    "./*": "./*"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./RequestParams": "./dist/RequestParams.mjs",
+      "./ServerRequest": "./dist/ServerRequest.mjs",
+      "./ServerResponse": "./dist/ServerResponse.mjs",
+      "./*": "./*"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "Mackie Underdown <macklinu@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/macklinu/effect-utils.git",
+    "directory": "packages/otel"
+  },
+  "peerDependencies": {
+    "@effect/platform": "^0.93.6",
+    "effect": "^3.17.7"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.2",
+    "@effect/platform": "^0.93.6",
+    "@effect/vitest": "^0.27.0",
+    "@macklinu/tsdown-config": "workspace:*",
+    "@total-typescript/tsconfig": "^1.0.4",
+    "effect": "^3.19.10",
+    "tsdown": "^0.17.2"
+  }
+}
