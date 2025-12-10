@@ -39,6 +39,8 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: pnpm
+      - name: Build packages
+        run: pnpm build
       - name: Run type check
         run: pnpm typecheck
   test:
