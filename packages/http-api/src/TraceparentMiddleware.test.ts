@@ -1,16 +1,17 @@
-import { assert, describe, expect, it } from '@effect/vitest'
-import * as TraceparentMiddleware from './TraceparentMiddleware'
-import * as Schema from 'effect/Schema'
-import * as Layer from 'effect/Layer'
-import * as Effect from 'effect/Effect'
-import { NodeHttpServer } from '@effect/platform-node'
-import * as Option from 'effect/Option'
+import * as NodeHttpServer from '@effect/platform-node/NodeHttpServer'
+import * as Headers from '@effect/platform/Headers'
 import * as HttpApi from '@effect/platform/HttpApi'
-import * as HttpApiGroup from '@effect/platform/HttpApiGroup'
-import * as HttpApiEndpoint from '@effect/platform/HttpApiEndpoint'
 import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'
 import * as HttpApiClient from '@effect/platform/HttpApiClient'
-import * as Headers from '@effect/platform/Headers'
+import * as HttpApiEndpoint from '@effect/platform/HttpApiEndpoint'
+import * as HttpApiGroup from '@effect/platform/HttpApiGroup'
+import { assert, describe, expect, it } from '@effect/vitest'
+import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
+import * as Option from 'effect/Option'
+import * as Schema from 'effect/Schema'
+
+import * as TraceparentMiddleware from './TraceparentMiddleware'
 
 describe('layer', () => {
   const Api = HttpApi.make('Api')

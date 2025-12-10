@@ -1,12 +1,13 @@
-import { it, expect, assert, describe } from '@effect/vitest'
-import * as Effect from 'effect/Effect'
-import * as Tracer from './Tracer'
-import * as Layer from 'effect/Layer'
-import { FetchHttpClient } from '@effect/platform'
-import * as ConfigProvider from 'effect/ConfigProvider'
-import * as Exit from 'effect/Exit'
+import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
+import { assert, describe, expect, it } from '@effect/vitest'
 import * as Cause from 'effect/Cause'
 import * as ConfigError from 'effect/ConfigError'
+import * as ConfigProvider from 'effect/ConfigProvider'
+import * as Effect from 'effect/Effect'
+import * as Exit from 'effect/Exit'
+import * as Layer from 'effect/Layer'
+
+import * as Tracer from './Tracer'
 
 describe('layerOtel', () => {
   const OtelLive = Layer.provide(Tracer.layerOtel, FetchHttpClient.layer)

@@ -1,10 +1,11 @@
 import { describe, expect, it } from '@effect/vitest'
+import * as ConfigError from 'effect/ConfigError'
+import * as ConfigProvider from 'effect/ConfigProvider'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as Logger from 'effect/Logger'
+
 import { layerFromDebug, layerFromNodeEnv } from './Logger'
-import * as ConfigProvider from 'effect/ConfigProvider'
-import * as ConfigError from 'effect/ConfigError'
 
 const exerciseLogger = Effect.fnUntraced(
   function* (
