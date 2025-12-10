@@ -23,6 +23,7 @@
     "./*": "./*"
   },
   "publishConfig": {
+    "provenance": true,
     "exports": {
       ".": "./dist/index.mjs",
       "./RequestParams": "./dist/RequestParams.mjs",

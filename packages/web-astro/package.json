@@ -27,6 +27,7 @@
     "./*": "./*"
   },
   "publishConfig": {
+    "provenance": true,
     "exports": {
       ".": "./dist/index.mjs",
       "./AstroRequestParams": "./dist/AstroRequestParams.mjs",

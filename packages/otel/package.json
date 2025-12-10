@@ -15,6 +15,7 @@
     "./*": "./*"
   },
   "publishConfig": {
+    "provenance": true,
     "exports": {
       ".": "./dist/index.mjs",
       "./Tracer": "./dist/Tracer.mjs",
