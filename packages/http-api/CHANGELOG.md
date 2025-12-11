@@ -1,5 +1,11 @@
 # @macklinu/effect-http-api
 
+## 0.2.1
+
+### Patch Changes
+
+- 874f6d2: Include src in published files
+
 ## 0.2.0
 
 ### Minor Changes
