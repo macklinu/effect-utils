@@ -41,6 +41,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "files": [
+    "src",
     "dist"
   ],
   "scripts": {
@@ -63,6 +64,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
+    "@effect/experimental": "^0.57.11",
     "@effect/platform": "^0.93.6",
     "@effect/vitest": "^0.27.0",
     "@macklinu/effect-web": "workspace:*",
