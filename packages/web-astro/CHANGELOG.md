@@ -1,5 +1,13 @@
 # @macklinu/effect-web-astro
 
+## 1.0.1
+
+### Patch Changes
+
+- 874f6d2: Include src in published files
+- Updated dependencies [874f6d2]
+  - @macklinu/effect-web@0.1.1
+
 ## 1.0.0
 
 ### Minor Changes
