@@ -1,5 +1,11 @@
 # @macklinu/effect-web
 
+## 0.1.2
+
+### Patch Changes
+
+- 5025c4d: Add declarationMap to TypeScript config
+
 ## 0.1.1
 
 ### Patch Changes
