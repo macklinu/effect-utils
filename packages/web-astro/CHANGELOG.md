@@ -1,5 +1,13 @@
 # @macklinu/effect-web-astro
 
+## 1.0.2
+
+### Patch Changes
+
+- c4825f9: Add declarationMap to TypeScript config
+- Updated dependencies [c4825f9]
+  - @macklinu/effect-web@0.1.2
+
 ## 1.0.1
 
 ### Patch Changes

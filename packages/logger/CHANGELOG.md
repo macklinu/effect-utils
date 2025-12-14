@@ -1,5 +1,11 @@
 # @macklinu/effect-logger
 
+## 0.3.2
+
+### Patch Changes
+
+- c4825f9: Add declarationMap to TypeScript config
+
 ## 0.3.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @macklinu/effect-otel
 
+## 0.2.2
+
+### Patch Changes
+
+- c4825f9: Add declarationMap to TypeScript config
+
 ## 0.2.1
 
 ### Patch Changes
