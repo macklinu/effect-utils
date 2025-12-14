@@ -3,6 +3,7 @@
   "exclude": ["dist"],
   "include": ["**/*"],
   "compilerOptions": {
+    "declarationMap": true,
     "plugins": [
       {
         "name": "@effect/language-service",
