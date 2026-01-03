@@ -1,12 +1,11 @@
 import * as HttpServerResponse from '@effect/platform/HttpServerResponse'
 import type { AstroGlobal } from 'astro'
 import * as Effect from 'effect/Effect'
-import * as Layer from 'effect/Layer'
 
 import * as ServerResponse from '@macklinu/effect-web/ServerResponse'
 
-export const layer = (Astro: AstroGlobal) =>
-  Layer.effect(
+export const provideService = (Astro: AstroGlobal) =>
+  Effect.provideServiceEffect(
     ServerResponse.ServerResponse,
     Effect.gen(function* () {
       let response = HttpServerResponse.empty().pipe(
