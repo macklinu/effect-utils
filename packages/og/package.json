@@ -1,0 +1,68 @@
+{
+  "name": "@macklinu/effect-og",
+  "version": "0.0.0",
+  "description": "A module for working with Open Graph metadata in Effect",
+  "type": "module",
+  "exports": {
+    ".": {
+      "@macklinu/source": "./src/index.ts",
+      "default": "./dist/index.mjs"
+    },
+    "./RequestParams": {
+      "@macklinu/source": "./src/RequestParams.ts",
+      "default": "./dist/RequestParams.mjs"
+    },
+    "./ServerRequest": {
+      "@macklinu/source": "./src/ServerRequest.ts",
+      "default": "./dist/ServerRequest.mjs"
+    },
+    "./ServerResponse": {
+      "@macklinu/source": "./src/ServerResponse.ts",
+      "default": "./dist/ServerResponse.mjs"
+    },
+    "./*": "./*"
+  },
+  "publishConfig": {
+    "provenance": true,
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./RequestParams": "./dist/RequestParams.mjs",
+      "./ServerRequest": "./dist/ServerRequest.mjs",
+      "./ServerResponse": "./dist/ServerResponse.mjs",
+      "./*": "./*"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "Mackie Underdown <macklinu@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/macklinu/effect-utils.git",
+    "directory": "packages/otel"
+  },
+  "peerDependencies": {
+    "effect": "^3.19.0",
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.2",
+    "@effect/vitest": "^0.27.0",
+    "@macklinu/tsdown-config": "workspace:*",
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@types/react": "^19.2.7",
+    "effect": "^3.19.10",
+    "react": "^19.2.3",
+    "tsdown": "^0.17.2"
+  }
+}
