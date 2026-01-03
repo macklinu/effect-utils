@@ -1,6 +1,6 @@
 {
   "name": "@macklinu/effect-web-astro",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Astro implementation for @macklinu/effect-web",
   "type": "module",
   "exports": {

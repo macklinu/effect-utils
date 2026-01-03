@@ -1,6 +1,6 @@
 {
   "name": "@macklinu/effect-web",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Common services used when bridging web frameworks with Effect",
   "type": "module",
   "exports": {

@@ -1,5 +1,16 @@
 # @macklinu/effect-web-astro
 
+## 2.1.0
+
+### Minor Changes
+
+- 729090e: Add provideServiceApiRoute for Astro API routes
+
+### Patch Changes
+
+- Updated dependencies [c6fde54]
+  - @macklinu/effect-web@0.2.0
+
 ## 2.0.0
 
 ### Major Changes
