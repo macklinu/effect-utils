@@ -1,5 +1,11 @@
 # @macklinu/effect-web-astro
 
+## 2.0.0
+
+### Major Changes
+
+- 5f141e2: Switch from layers to provideService for Astro
+
 ## 1.0.2
 
 ### Patch Changes
