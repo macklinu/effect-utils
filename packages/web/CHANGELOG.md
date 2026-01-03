@@ -1,5 +1,11 @@
 # @macklinu/effect-web
 
+## 0.2.0
+
+### Minor Changes
+
+- c6fde54: Add number to RequestParams value type
+
 ## 0.1.2
 
 ### Patch Changes
