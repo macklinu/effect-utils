@@ -1,7 +1,7 @@
 import type { AstroGlobal } from 'astro'
-import * as Layer from 'effect/Layer'
+import * as Effect from 'effect/Effect'
 
 import * as RequestParams from '@macklinu/effect-web/RequestParams'
 
-export const layer = (Astro: AstroGlobal) =>
-  Layer.succeed(RequestParams.RequestParams, Astro.params)
+export const provideService = (Astro: AstroGlobal) =>
+  Effect.provideService(RequestParams.RequestParams, Astro.params)

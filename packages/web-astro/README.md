@@ -1,6 +1,6 @@
 # @macklinu/effect-web-astro
 
-> Implementations for `@macklinu/effect-web`
+> Astro implementation for `@macklinu/effect-web`
 
 ## Installation
 
@@ -33,8 +33,8 @@ const requestHandler = Effect.gen(function* () {
 
 const result = await Effect.runPromiseExit(
   requestHandler.pipe(
-    // Provide the Astro global/context into your request effect layer
-    Effect.provide(EffectWebAstro.layerAstro(Astro))
+    // Provide the Astro global/context to your Effect
+    EffectWebAstro.provideService(Astro)
   )
 )
 ```

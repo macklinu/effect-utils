@@ -1,12 +1,15 @@
 import type { AstroGlobal } from 'astro'
-import * as Layer from 'effect/Layer'
+import * as Effect from 'effect/Effect'
 
 import * as AstroRequestParams from './AstroRequestParams'
 import * as AstroServerRequest from './AstroServerRequest'
 import * as AstroServerResponse from './AstroServerResponse'
 
-export const layerRequest = (Astro: AstroGlobal) =>
-  AstroRequestParams.layer(Astro).pipe(
-    Layer.provideMerge(AstroServerRequest.layer(Astro)),
-    Layer.provideMerge(AstroServerResponse.layer(Astro))
-  )
+export const provideService =
+  (Astro: AstroGlobal) =>
+  <A, E, R>(self: Effect.Effect<A, E, R>) =>
+    self.pipe(
+      AstroRequestParams.provideService(Astro),
+      AstroServerRequest.provideService(Astro),
+      AstroServerResponse.provideService(Astro)
+    )
