@@ -29,7 +29,7 @@ declare module 'effect/Schema' {
 const forEncodingOnly = <const Self extends string>(self: Self) =>
   Schema.optionalWith(Schema.Literal(self), { default: () => self })
 
-class Image extends Schema.TaggedClass<Image>(id('Image'))(id('Image'), {
+export class Image extends Schema.TaggedClass<Image>(id('Image'))(id('Image'), {
   url: Schema.URL.annotations(openGraphProperty('og:image')),
   secureUrl: Schema.optional(Schema.URL).annotations(
     openGraphProperty('og:image:secure_url')
@@ -50,12 +50,15 @@ class Image extends Schema.TaggedClass<Image>(id('Image'))(id('Image'), {
   static readonly is = Schema.is(Image)
 }
 
-class Locale extends Schema.TaggedClass<Locale>(id('Locale'))(id('Locale'), {
-  default: Schema.String.annotations(openGraphProperty('og:locale')),
-  alternate: Schema.optional(Schema.Array(Schema.String)).annotations(
-    openGraphProperty('og:locale:alternate')
-  ),
-}) {
+export class Locale extends Schema.TaggedClass<Locale>(id('Locale'))(
+  id('Locale'),
+  {
+    default: Schema.String.annotations(openGraphProperty('og:locale')),
+    alternate: Schema.optional(Schema.Array(Schema.String)).annotations(
+      openGraphProperty('og:locale:alternate')
+    ),
+  }
+) {
   static readonly is = Schema.is(Locale)
 }
 
@@ -185,13 +188,29 @@ const decodeUrl = (value: UrlInput) =>
     ? Effect.succeed(value)
     : Schema.decodeUnknown(Schema.URL)(value)
 
-interface ImageInput {
-  readonly url: UrlInput
-  readonly secureUrl?: UrlInput
-  readonly width?: number
-  readonly height?: number
-  readonly type?: string
-  readonly alt?: string
+type WithUrlInput<T> = {
+  readonly [K in keyof T]: [T[K]] extends [URL]
+    ? UrlInput
+    : [T[K]] extends [URL | undefined]
+      ? UrlInput | undefined
+      : T[K]
+}
+
+type ImageInput = WithUrlInput<Omit<Image, '_tag'>>
+type LocaleInput = Omit<Locale, '_tag'>
+type MetadataInput = Omit<
+  WithUrlInput<Metadata>,
+  '_tag' | 'type' | 'image' | 'locale'
+> & {
+  readonly image: ImageInput | ReadonlyArray<ImageInput>
+  readonly locale?: LocaleInput
+}
+type ArticleInput = Omit<
+  WithUrlInput<Article>,
+  '_tag' | 'type' | 'image' | 'locale'
+> & {
+  readonly image: ImageInput | ReadonlyArray<ImageInput>
+  readonly locale?: LocaleInput
 }
 
 const normalizeImage = Effect.fnUntraced(function* (image: ImageInput) {
@@ -201,23 +220,6 @@ const normalizeImage = Effect.fnUntraced(function* (image: ImageInput) {
     secureUrl: image.secureUrl ? yield* decodeUrl(image.secureUrl) : undefined,
   })
 })
-
-interface LocaleInput {
-  readonly default: string
-  readonly alternate?: ReadonlyArray<string>
-}
-
-interface MetadataInput {
-  readonly title: string
-  readonly url: UrlInput
-  readonly audio?: string
-  readonly description?: string
-  readonly determiner?: 'a' | 'an' | 'the' | '' | 'auto'
-  readonly image: ImageInput | ReadonlyArray<ImageInput>
-  readonly locale?: LocaleInput
-  readonly siteName?: string
-  readonly video?: UrlInput
-}
 
 export const makeWebsite = Effect.fnUntraced(function* (
   website: MetadataInput
@@ -237,15 +239,6 @@ export const makeWebsite = Effect.fnUntraced(function* (
     })
   )
 })
-
-interface ArticleInput extends Omit<MetadataInput, 'determiner'> {
-  readonly publishedTime: DateTime.Utc
-  readonly modifiedTime?: DateTime.Utc
-  readonly expirationTime?: DateTime.Utc
-  readonly author?: UrlInput
-  readonly section?: string
-  readonly tags?: ReadonlyArray<string>
-}
 
 export const makeArticle = Effect.fnUntraced(function* (article: ArticleInput) {
   const url = yield* decodeUrl(article.url)
