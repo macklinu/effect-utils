@@ -2,7 +2,6 @@ import { expect, it } from '@effect/vitest'
 import * as Arbitrary from 'effect/Arbitrary'
 import * as DateTime from 'effect/DateTime'
 import * as Effect from 'effect/Effect'
-import * as FastCheck from 'effect/FastCheck'
 
 import * as Og from './Og'
 
@@ -47,20 +46,18 @@ it.effect('Article with URL instances', () =>
   })
 )
 
-it.effect.prop(
+it.prop(
   'article renders without throwing',
   [Arbitrary.make(Og.Article)],
-  ([article]) =>
-    Effect.gen(function* () {
-      const rendered = Og.renderTaggedClass(Og.Article)(article)
-      expect(rendered).toBeInstanceOf(Array)
-      expect(rendered.length).toBeGreaterThan(0)
-      for (const tag of rendered) {
-        expect(tag).toHaveProperty('property')
-        expect(tag).toHaveProperty('content')
-        expect(typeof tag.property).toBe('string')
-        expect(typeof tag.content).toBe('string')
-      }
-    }),
-  { fastCheck: { numRuns: 20 } }
+  ([article]) => {
+    const rendered = Og.renderTaggedClass(Og.Article)(article)
+    expect(rendered).toBeInstanceOf(Array)
+    expect(rendered.length).toBeGreaterThan(0)
+    for (const tag of rendered) {
+      expect(tag).toHaveProperty('property')
+      expect(tag).toHaveProperty('content')
+      expect(typeof tag.property).toBe('string')
+      expect(typeof tag.content).toBe('string')
+    }
+  }
 )

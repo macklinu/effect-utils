@@ -8,17 +8,12 @@
       "@macklinu/source": "./src/index.ts",
       "default": "./dist/index.mjs"
     },
-    "./Og": {
-      "@macklinu/source": "./src/Og.tsx",
-      "default": "./dist/Og.mjs"
-    },
     "./*": "./*"
   },
   "publishConfig": {
     "provenance": true,
     "exports": {
       ".": "./dist/index.mjs",
-      "./Og": "./dist/Og.mjs",
       "./*": "./*"
     }
   },

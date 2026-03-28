@@ -1,5 +1,6 @@
 import * as Array from 'effect/Array'
 import * as DateTime from 'effect/DateTime'
+import * as Effect from 'effect/Effect'
 import * as Function from 'effect/Function'
 import * as Match from 'effect/Match'
 import * as Option from 'effect/Option'
@@ -25,18 +26,12 @@ declare module 'effect/Schema' {
   }
 }
 
-/**
- * Accepts a string and validates it as a URL. Decodes to a `URL` instance,
- * encodes back to a string.
- */
-const Url = Schema.URL
-
 const forEncodingOnly = <const Self extends string>(self: Self) =>
   Schema.optionalWith(Schema.Literal(self), { default: () => self })
 
 class Image extends Schema.TaggedClass<Image>(id('Image'))(id('Image'), {
-  url: Url.annotations(openGraphProperty('og:image')),
-  secureUrl: Schema.optional(Url).annotations(
+  url: Schema.URL.annotations(openGraphProperty('og:image')),
+  secureUrl: Schema.optional(Schema.URL).annotations(
     openGraphProperty('og:image:secure_url')
   ),
   width: Schema.optional(Schema.Number).annotations(
@@ -69,7 +64,7 @@ class Metadata extends Schema.TaggedClass<Metadata>(id('Metadata'))(
   {
     type: forEncodingOnly('website').annotations(openGraphProperty('og:type')),
     title: Schema.String.annotations(openGraphProperty('og:title')),
-    url: Url.annotations(openGraphProperty('og:url')),
+    url: Schema.URL.annotations(openGraphProperty('og:url')),
     audio: Schema.optional(Schema.String).annotations(
       openGraphProperty('og:audio')
     ),
@@ -84,7 +79,9 @@ class Metadata extends Schema.TaggedClass<Metadata>(id('Metadata'))(
     siteName: Schema.optional(Schema.String).annotations(
       openGraphProperty('og:site_name')
     ),
-    video: Schema.optional(Url).annotations(openGraphProperty('og:video')),
+    video: Schema.optional(Schema.URL).annotations(
+      openGraphProperty('og:video')
+    ),
   }
 ) {}
 
@@ -106,7 +103,7 @@ export class Article extends Schema.TaggedClass<Article>(id('Article'))(
       openGraphProperty('article:expiration_time')
     ),
     /** Writers of the article. */
-    author: Schema.optional(Url).annotations(
+    author: Schema.optional(Schema.URL).annotations(
       openGraphProperty('article:author')
     ),
     /** A high-level section name. E.g. Technology. */
@@ -185,8 +182,10 @@ const validateArticle = Schema.validate(Article)
 
 type UrlInput = string | URL
 
-const toUrl = (value: UrlInput): URL =>
-  typeof value === 'string' ? new URL(value) : value
+const decodeUrl = (value: UrlInput) =>
+  value instanceof URL
+    ? Effect.succeed(value)
+    : Schema.decodeUnknown(Schema.URL)(value)
 
 interface ImageInput {
   readonly url: UrlInput
@@ -197,12 +196,13 @@ interface ImageInput {
   readonly alt?: string
 }
 
-const normalizeImage = (image: ImageInput) =>
-  Image.make({
+const normalizeImage = Effect.fnUntraced(function* (image: ImageInput) {
+  return Image.make({
     ...image,
-    url: toUrl(image.url),
-    secureUrl: image.secureUrl ? toUrl(image.secureUrl) : undefined,
+    url: yield* decodeUrl(image.url),
+    secureUrl: image.secureUrl ? yield* decodeUrl(image.secureUrl) : undefined,
   })
+})
 
 interface LocaleInput {
   readonly default: string
@@ -221,16 +221,24 @@ interface MetadataInput {
   readonly video?: UrlInput
 }
 
-export const makeWebsite = (website: MetadataInput) =>
-  validateMetadata(
+export const makeWebsite = Effect.fnUntraced(function* (
+  website: MetadataInput
+) {
+  const url = yield* decodeUrl(website.url)
+  const video = website.video ? yield* decodeUrl(website.video) : undefined
+  const image = yield* Effect.all(
+    Array.ensure(website.image).map(normalizeImage)
+  )
+  return yield* validateMetadata(
     Metadata.make({
       ...website,
-      url: toUrl(website.url),
-      video: website.video ? toUrl(website.video) : undefined,
-      image: Array.ensure(website.image).map(normalizeImage),
+      url,
+      video,
+      image,
       locale: website.locale ? Locale.make(website.locale) : undefined,
     })
   )
+})
 
 export const make = makeWebsite
 
@@ -243,17 +251,24 @@ interface ArticleInput extends Omit<MetadataInput, 'determiner'> {
   readonly tags?: ReadonlyArray<string>
 }
 
-export const makeArticle = (article: ArticleInput) =>
-  validateArticle(
+export const makeArticle = Effect.fnUntraced(function* (article: ArticleInput) {
+  const url = yield* decodeUrl(article.url)
+  const video = article.video ? yield* decodeUrl(article.video) : undefined
+  const author = article.author ? yield* decodeUrl(article.author) : undefined
+  const image = yield* Effect.all(
+    Array.ensure(article.image).map(normalizeImage)
+  )
+  return yield* validateArticle(
     Article.make({
       ...article,
-      url: toUrl(article.url),
-      video: article.video ? toUrl(article.video) : undefined,
-      author: article.author ? toUrl(article.author) : undefined,
-      image: Array.ensure(article.image).map(normalizeImage),
+      url,
+      video,
+      author,
+      image,
       locale: article.locale ? Locale.make(article.locale) : undefined,
     })
   )
+})
 
 export const render = (schema: OgSchema) => (
   <>
