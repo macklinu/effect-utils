@@ -8,21 +8,18 @@
       "@macklinu/source": "./src/index.ts",
       "default": "./dist/index.mjs"
     },
-    "./Og": {
-      "@macklinu/source": "./src/Og.tsx",
-      "default": "./dist/Og.mjs"
-    },
     "./react": {
       "@macklinu/source": "./src/react.tsx",
       "default": "./dist/react.mjs"
-    }
+    },
+    "./*": "./*"
   },
   "publishConfig": {
     "provenance": true,
     "exports": {
       ".": "./dist/index.mjs",
-      "./Og": "./dist/Og.mjs",
-      "./react": "./dist/react.mjs"
+      "./react": "./dist/react.mjs",
+      "./*": "./*"
     }
   },
   "main": "./dist/index.mjs",

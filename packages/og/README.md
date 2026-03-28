@@ -1,8 +1,6 @@
 # @macklinu/effect-og
 
-Type-safe [Open Graph](https://ogp.me/) metadata generation for [Effect](https://effect.website/) applications.
-
-URLs are validated, `og:type` is set automatically, datetimes are formatted to ISO 8601, and images/locales are normalized — so the metadata you construct is always valid according to the Open Graph protocol.
+> A module for working with Open Graph](https://ogp.me/) metadata in [Effect](https://effect.website/)
 
 ## Installation
 
@@ -10,7 +8,10 @@ URLs are validated, `og:type` is set automatically, datetimes are formatted to I
 pnpm add @macklinu/effect-og
 ```
 
-Peer dependencies: `effect@^3.19.0` and `react@^19` (only needed if using `@macklinu/effect-og/react`).
+Peer dependencies:
+
+- `effect@^3.19.0`
+- `react@^19` (optional; needed if using `@macklinu/effect-og/react`).
 
 ## Usage
 
@@ -94,7 +95,7 @@ import { MetaTags } from '@macklinu/effect-og/react'
 | `website` | `Og.makeWebsite()` |
 | `article` | `Og.makeArticle()` |
 
-Both constructors return `Effect<T, ParseError, never>` — they validate URLs and normalize inputs, surfacing any issues as typed `ParseError` values in the error channel.
+Both constructors return `Effect<T, ParseError, never>`, validating inputs and surfacing any issues as typed `ParseError` values in the error channel.
 
 ## API
 
