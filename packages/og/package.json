@@ -1,0 +1,71 @@
+{
+  "name": "@macklinu/effect-og",
+  "version": "0.0.0",
+  "description": "A module for working with Open Graph metadata in Effect",
+  "type": "module",
+  "exports": {
+    ".": {
+      "@macklinu/source": "./src/index.ts",
+      "default": "./dist/index.mjs"
+    },
+    "./react": {
+      "@macklinu/source": "./src/react.tsx",
+      "default": "./dist/react.mjs"
+    },
+    "./*": "./*"
+  },
+  "publishConfig": {
+    "provenance": true,
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./react": "./dist/react.mjs",
+      "./*": "./*"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "effect",
+    "open-graph",
+    "og",
+    "metadata",
+    "seo",
+    "react"
+  ],
+  "author": "Mackie Underdown <macklinu@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/macklinu/effect-utils.git",
+    "directory": "packages/og"
+  },
+  "sideEffects": false,
+  "peerDependencies": {
+    "effect": "^3.19.0",
+    "react": "^19"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.2",
+    "@effect/vitest": "^0.27.0",
+    "@macklinu/tsdown-config": "workspace:*",
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@types/react": "^19.2.7",
+    "effect": "^3.19.10",
+    "react": "^19.2.3",
+    "tsdown": "^0.17.2"
+  }
+}
