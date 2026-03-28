@@ -2,7 +2,7 @@ import { defineConfig, type UserConfig } from 'tsdown/config'
 
 export const defineLibraryConfig = (options?: Partial<UserConfig>) =>
   defineConfig({
-    entry: ['./src/!(*.test).ts'],
+    entry: ['./src/!(*.test).ts', './src/!(*.test).tsx'],
     exports: {
       all: true,
       devExports: '@macklinu/source',

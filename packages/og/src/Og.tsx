@@ -59,7 +59,7 @@ class Locale extends Schema.TaggedClass<Locale>(id('Locale'))(id('Locale'), {
   static readonly is = Schema.is(Locale)
 }
 
-class Metadata extends Schema.TaggedClass<Metadata>(id('Metadata'))(
+export class Metadata extends Schema.TaggedClass<Metadata>(id('Metadata'))(
   id('Metadata'),
   {
     type: forEncodingOnly('website').annotations(openGraphProperty('og:type')),
@@ -130,9 +130,7 @@ const renderContent = Match.type<string | number | URL | DateTime.Utc>().pipe(
   Match.exhaustive
 )
 
-type MetaTag = Readonly<{ property: string; content: string }>
-
-export const renderTaggedClass =
+const renderTaggedClass =
   <F extends Schema.Struct.Fields>(classType: { fields: F }) =>
   (instance: Record<string, any>): ReadonlyArray<MetaTag> => {
     return Array.filterMap(Struct.entries(classType.fields), ([key, value]) => {
@@ -174,8 +172,8 @@ export const renderTaggedClass =
     }).flat()
   }
 
-const OgSchema = Schema.Union(Article, Metadata)
-type OgSchema = typeof OgSchema.Type
+export const OgSchema = Schema.Union(Article, Metadata)
+export type OgSchema = typeof OgSchema.Type
 
 const validateMetadata = Schema.validate(Metadata)
 const validateArticle = Schema.validate(Article)
@@ -240,8 +238,6 @@ export const makeWebsite = Effect.fnUntraced(function* (
   )
 })
 
-export const make = makeWebsite
-
 interface ArticleInput extends Omit<MetadataInput, 'determiner'> {
   readonly publishedTime: DateTime.Utc
   readonly modifiedTime?: DateTime.Utc
@@ -270,20 +266,11 @@ export const makeArticle = Effect.fnUntraced(function* (article: ArticleInput) {
   )
 })
 
-export const render = (schema: OgSchema) => (
-  <>
-    {Match.value(schema)
-      .pipe(
-        Match.tag(id('Article'), renderTaggedClass(Article)),
-        Match.tag(id('Metadata'), renderTaggedClass(Metadata)),
-        Match.exhaustive
-      )
-      .map(({ property, content }) => (
-        <meta
-          key={`${property}-${content}`}
-          property={property}
-          content={content}
-        />
-      ))}
-  </>
-)
+export type MetaTag = Readonly<{ property: string; content: string }>
+
+export const toMetaTags = (schema: OgSchema): ReadonlyArray<MetaTag> =>
+  Match.value(schema).pipe(
+    Match.tag(id('Article'), renderTaggedClass(Article)),
+    Match.tag(id('Metadata'), renderTaggedClass(Metadata)),
+    Match.exhaustive
+  )
