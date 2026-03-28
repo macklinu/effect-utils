@@ -28,63 +28,36 @@ it.effect('Article', () =>
         },
       ],
     })
-    expect(Og.render(article)).toMatchInlineSnapshot(`
-      <React.Fragment>
-        <meta
-          content="My article"
-          property="og:title"
-        />
-        <meta
-          content="https://example.com"
-          property="og:url"
-        />
-        <meta
-          content="https://example.com/image.png"
-          property="og:image"
-        />
-        <meta
-          content="800"
-          property="og:image:width"
-        />
-        <meta
-          content="600"
-          property="og:image:height"
-        />
-        <meta
-          content="https://example.com/image-2.png"
-          property="og:image"
-        />
-        <meta
-          content="800"
-          property="og:image:width"
-        />
-        <meta
-          content="600"
-          property="og:image:height"
-        />
-        <meta
-          content="en-US"
-          property="og:locale"
-        />
-        <meta
-          content="pt-BR"
-          property="og:locale:alternate"
-        />
-        <meta
-          content="article"
-          property="og:type"
-        />
-        <meta
-          content="2025-12-20T00:00:00.000Z"
-          property="article:published_time"
-        />
-      </React.Fragment>
-    `)
+    expect(Og.render(article)).toMatchSnapshot()
   })
 )
 
-it.effect.prop('article all', [Arbitrary.make(Og.Article)], ([article]) =>
+it.effect('Article with URL instances', () =>
   Effect.gen(function* () {
-    console.log(article)
+    const article = yield* Og.makeArticle({
+      title: 'URL instance test',
+      publishedTime: DateTime.unsafeMake('2025-12-20'),
+      url: new URL('https://example.com'),
+      image: {
+        url: new URL('https://example.com/image.png'),
+      },
+    })
+    expect(Og.render(article)).toMatchSnapshot()
   })
+)
+
+it.prop(
+  'article renders without throwing',
+  [Arbitrary.make(Og.Article)],
+  ([article]) => {
+    const rendered = Og.renderTaggedClass(Og.Article)(article)
+    expect(rendered).toBeInstanceOf(Array)
+    expect(rendered.length).toBeGreaterThan(0)
+    for (const tag of rendered) {
+      expect(tag).toHaveProperty('property')
+      expect(tag).toHaveProperty('content')
+      expect(typeof tag.property).toBe('string')
+      expect(typeof tag.content).toBe('string')
+    }
+  }
 )

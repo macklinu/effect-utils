@@ -1,9 +1,9 @@
 import * as Array from 'effect/Array'
 import * as DateTime from 'effect/DateTime'
+import * as Effect from 'effect/Effect'
 import * as Function from 'effect/Function'
 import * as Match from 'effect/Match'
 import * as Option from 'effect/Option'
-import * as ParseResult from 'effect/ParseResult'
 import * as Schema from 'effect/Schema'
 import * as SchemaAST from 'effect/SchemaAST'
 import * as Struct from 'effect/Struct'
@@ -26,44 +26,12 @@ declare module 'effect/Schema' {
   }
 }
 
-type WithoutTag<T extends { _tag: string }> = Omit<T, '_tag'>
-
-type Properties<TSchema extends Schema.Schema<any>> = WithoutTag<
-  Schema.Schema.Encoded<TSchema>
->
-
-const URLFromStringOrURL = Schema.encodedSchema(
-  Schema.transformOrFail(
-    Schema.Union(Schema.String, Schema.instanceOf(URL)),
-    Schema.instanceOf(URL),
-    {
-      strict: true,
-      decode: (input, _options, ast) => {
-        if (typeof input === 'string') {
-          const url = URL.parse(input)
-
-          if (url) {
-            return ParseResult.succeed(url)
-          }
-
-          return ParseResult.fail(
-            new ParseResult.Type(ast, input, 'Invalid URL')
-          )
-        }
-
-        return ParseResult.succeed(input)
-      },
-      encode: (input) => ParseResult.succeed(input.toString()),
-    }
-  )
-).annotations({ arbitrary: () => (fc) => fc.webUrl() })
-
 const forEncodingOnly = <const Self extends string>(self: Self) =>
   Schema.optionalWith(Schema.Literal(self), { default: () => self })
 
 class Image extends Schema.TaggedClass<Image>(id('Image'))(id('Image'), {
-  url: URLFromStringOrURL.annotations(openGraphProperty('og:image')),
-  secureUrl: Schema.optional(URLFromStringOrURL).annotations(
+  url: Schema.URL.annotations(openGraphProperty('og:image')),
+  secureUrl: Schema.optional(Schema.URL).annotations(
     openGraphProperty('og:image:secure_url')
   ),
   width: Schema.optional(Schema.Number).annotations(
@@ -96,7 +64,7 @@ class Metadata extends Schema.TaggedClass<Metadata>(id('Metadata'))(
   {
     type: forEncodingOnly('website').annotations(openGraphProperty('og:type')),
     title: Schema.String.annotations(openGraphProperty('og:title')),
-    url: URLFromStringOrURL.annotations(openGraphProperty('og:url')),
+    url: Schema.URL.annotations(openGraphProperty('og:url')),
     audio: Schema.optional(Schema.String).annotations(
       openGraphProperty('og:audio')
     ),
@@ -111,7 +79,7 @@ class Metadata extends Schema.TaggedClass<Metadata>(id('Metadata'))(
     siteName: Schema.optional(Schema.String).annotations(
       openGraphProperty('og:site_name')
     ),
-    video: Schema.optional(URLFromStringOrURL).annotations(
+    video: Schema.optional(Schema.URL).annotations(
       openGraphProperty('og:video')
     ),
   }
@@ -135,7 +103,7 @@ export class Article extends Schema.TaggedClass<Article>(id('Article'))(
       openGraphProperty('article:expiration_time')
     ),
     /** Writers of the article. */
-    author: Schema.optional(URLFromStringOrURL).annotations(
+    author: Schema.optional(Schema.URL).annotations(
       openGraphProperty('article:author')
     ),
     /** A high-level section name. E.g. Technology. */
@@ -168,7 +136,6 @@ export const renderTaggedClass =
   <F extends Schema.Struct.Fields>(classType: { fields: F }) =>
   (instance: Record<string, any>): ReadonlyArray<MetaTag> => {
     return Array.filterMap(Struct.entries(classType.fields), ([key, value]) => {
-      console.log(key, value)
       const annotated =
         value.ast._tag === 'PropertySignatureTransformation'
           ? value.ast.to
@@ -207,47 +174,108 @@ export const renderTaggedClass =
     }).flat()
   }
 
-const OgSchema = Schema.Union(Article)
-type OgSchema = typeof OgSchema.Encoded
+const OgSchema = Schema.Union(Article, Metadata)
+type OgSchema = typeof OgSchema.Type
 
-const decodeMetadata = Schema.decodeUnknown(Metadata)
-const decodeArticle = Schema.decodeUnknown(Article)
+const validateMetadata = Schema.validate(Metadata)
+const validateArticle = Schema.validate(Article)
 
-export const makeWebsite = (
-  website: Omit<Properties<typeof Metadata>, 'image' | 'locale'> & {
-    image: Properties<typeof Image> | ReadonlyArray<Properties<typeof Image>>
-    locale?: Properties<typeof Locale>
-  }
-) =>
-  decodeMetadata(
+type UrlInput = string | URL
+
+const decodeUrl = (value: UrlInput) =>
+  value instanceof URL
+    ? Effect.succeed(value)
+    : Schema.decodeUnknown(Schema.URL)(value)
+
+interface ImageInput {
+  readonly url: UrlInput
+  readonly secureUrl?: UrlInput
+  readonly width?: number
+  readonly height?: number
+  readonly type?: string
+  readonly alt?: string
+}
+
+const normalizeImage = Effect.fnUntraced(function* (image: ImageInput) {
+  return Image.make({
+    ...image,
+    url: yield* decodeUrl(image.url),
+    secureUrl: image.secureUrl ? yield* decodeUrl(image.secureUrl) : undefined,
+  })
+})
+
+interface LocaleInput {
+  readonly default: string
+  readonly alternate?: ReadonlyArray<string>
+}
+
+interface MetadataInput {
+  readonly title: string
+  readonly url: UrlInput
+  readonly audio?: string
+  readonly description?: string
+  readonly determiner?: 'a' | 'an' | 'the' | '' | 'auto'
+  readonly image: ImageInput | ReadonlyArray<ImageInput>
+  readonly locale?: LocaleInput
+  readonly siteName?: string
+  readonly video?: UrlInput
+}
+
+export const makeWebsite = Effect.fnUntraced(function* (
+  website: MetadataInput
+) {
+  const url = yield* decodeUrl(website.url)
+  const video = website.video ? yield* decodeUrl(website.video) : undefined
+  const image = yield* Effect.all(
+    Array.ensure(website.image).map(normalizeImage)
+  )
+  return yield* validateMetadata(
     Metadata.make({
       ...website,
-      image: Array.ensure(website.image).map((image) => Image.make(image)),
+      url,
+      video,
+      image,
       locale: website.locale ? Locale.make(website.locale) : undefined,
     })
   )
+})
 
 export const make = makeWebsite
 
-export const makeArticle = (
-  article: Omit<WithoutTag<typeof Article.Encoded>, 'image' | 'locale'> & {
-    image: Properties<typeof Image> | ReadonlyArray<Properties<typeof Image>>
-    locale?: Properties<typeof Locale>
-  }
-) =>
-  decodeArticle(
+interface ArticleInput extends Omit<MetadataInput, 'determiner'> {
+  readonly publishedTime: DateTime.Utc
+  readonly modifiedTime?: DateTime.Utc
+  readonly expirationTime?: DateTime.Utc
+  readonly author?: UrlInput
+  readonly section?: string
+  readonly tags?: ReadonlyArray<string>
+}
+
+export const makeArticle = Effect.fnUntraced(function* (article: ArticleInput) {
+  const url = yield* decodeUrl(article.url)
+  const video = article.video ? yield* decodeUrl(article.video) : undefined
+  const author = article.author ? yield* decodeUrl(article.author) : undefined
+  const image = yield* Effect.all(
+    Array.ensure(article.image).map(normalizeImage)
+  )
+  return yield* validateArticle(
     Article.make({
       ...article,
-      image: Array.ensure(article.image).map((image) => Image.make(image)),
+      url,
+      video,
+      author,
+      image,
       locale: article.locale ? Locale.make(article.locale) : undefined,
     })
   )
+})
 
 export const render = (schema: OgSchema) => (
   <>
     {Match.value(schema)
       .pipe(
         Match.tag(id('Article'), renderTaggedClass(Article)),
+        Match.tag(id('Metadata'), renderTaggedClass(Metadata)),
         Match.exhaustive
       )
       .map(({ property, content }) => (
