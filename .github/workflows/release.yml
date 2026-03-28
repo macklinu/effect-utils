@@ -11,7 +11,7 @@ jobs:
     name: 🚀 Release
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
+      id-token: write # Required for OIDC
       contents: write
       pull-requests: write
     steps:
@@ -26,6 +26,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Create release PR or publish to npm
