@@ -16,6 +16,7 @@
   },
   "publishConfig": {
     "provenance": true,
+    "access": "public",
     "exports": {
       ".": "./dist/index.mjs",
       "./react": "./dist/react.mjs",
