@@ -62,36 +62,33 @@ export class Locale extends Schema.TaggedClass<Locale>(id('Locale'))(
   static readonly is = Schema.is(Locale)
 }
 
-export class Metadata extends Schema.TaggedClass<Metadata>(id('Metadata'))(
-  id('Metadata'),
-  {
-    type: forEncodingOnly('website').annotations(openGraphProperty('og:type')),
-    title: Schema.String.annotations(openGraphProperty('og:title')),
-    url: Schema.URL.annotations(openGraphProperty('og:url')),
-    audio: Schema.optional(Schema.String).annotations(
-      openGraphProperty('og:audio')
-    ),
-    description: Schema.optional(Schema.String).annotations(
-      openGraphProperty('og:description')
-    ),
-    determiner: Schema.optional(
-      Schema.Literal('a', 'an', 'the', '', 'auto')
-    ).annotations(openGraphProperty('og:determiner')),
-    image: Schema.Union(Image, Schema.Array(Image)),
-    locale: Schema.optional(Locale),
-    siteName: Schema.optional(Schema.String).annotations(
-      openGraphProperty('og:site_name')
-    ),
-    video: Schema.optional(Schema.URL).annotations(
-      openGraphProperty('og:video')
-    ),
-  }
-) {}
+export class WebsiteMetadata extends Schema.TaggedClass<WebsiteMetadata>(
+  id('WebsiteMetadata')
+)(id('WebsiteMetadata'), {
+  type: forEncodingOnly('website').annotations(openGraphProperty('og:type')),
+  title: Schema.String.annotations(openGraphProperty('og:title')),
+  url: Schema.URL.annotations(openGraphProperty('og:url')),
+  audio: Schema.optional(Schema.String).annotations(
+    openGraphProperty('og:audio')
+  ),
+  description: Schema.optional(Schema.String).annotations(
+    openGraphProperty('og:description')
+  ),
+  determiner: Schema.optional(
+    Schema.Literal('a', 'an', 'the', '', 'auto')
+  ).annotations(openGraphProperty('og:determiner')),
+  image: Schema.Union(Image, Schema.Array(Image)),
+  locale: Schema.optional(Locale),
+  siteName: Schema.optional(Schema.String).annotations(
+    openGraphProperty('og:site_name')
+  ),
+  video: Schema.optional(Schema.URL).annotations(openGraphProperty('og:video')),
+}) {}
 
 export class Article extends Schema.TaggedClass<Article>(id('Article'))(
   id('Article'),
   {
-    ...Struct.omit(Metadata.fields, '_tag', 'type'),
+    ...Struct.omit(WebsiteMetadata.fields, '_tag', 'type'),
     type: forEncodingOnly('article').annotations(openGraphProperty('og:type')),
     /** When the article was first published. */
     publishedTime: Schema.DateTimeUtcFromSelf.annotations(
@@ -106,9 +103,9 @@ export class Article extends Schema.TaggedClass<Article>(id('Article'))(
       openGraphProperty('article:expiration_time')
     ),
     /** Writers of the article. */
-    author: Schema.optional(Schema.URL).annotations(
-      openGraphProperty('article:author')
-    ),
+    author: Schema.optional(
+      Schema.Union(Schema.URL, Schema.Array(Schema.URL))
+    ).annotations(openGraphProperty('article:author')),
     /** A high-level section name. E.g. Technology. */
     section: Schema.optional(Schema.String).annotations(
       openGraphProperty('article:section')
@@ -175,11 +172,8 @@ const renderTaggedClass =
     }).flat()
   }
 
-export const OgSchema = Schema.Union(Article, Metadata)
+export const OgSchema = Schema.Union(Article, WebsiteMetadata)
 export type OgSchema = typeof OgSchema.Type
-
-const validateMetadata = Schema.validate(Metadata)
-const validateArticle = Schema.validate(Article)
 
 type UrlInput = string | URL
 
@@ -198,8 +192,8 @@ type WithUrlInput<T> = {
 
 type ImageInput = WithUrlInput<Omit<Image, '_tag'>>
 type LocaleInput = Omit<Locale, '_tag'>
-type MetadataInput = Omit<
-  WithUrlInput<Metadata>,
+type WebsiteInput = Omit<
+  WithUrlInput<WebsiteMetadata>,
   '_tag' | 'type' | 'image' | 'locale'
 > & {
   readonly image: ImageInput | ReadonlyArray<ImageInput>
@@ -207,10 +201,11 @@ type MetadataInput = Omit<
 }
 type ArticleInput = Omit<
   WithUrlInput<Article>,
-  '_tag' | 'type' | 'image' | 'locale'
+  '_tag' | 'type' | 'image' | 'locale' | 'author'
 > & {
   readonly image: ImageInput | ReadonlyArray<ImageInput>
   readonly locale?: LocaleInput
+  readonly author?: UrlInput | ReadonlyArray<UrlInput>
 }
 
 const normalizeImage = Effect.fnUntraced(function* (image: ImageInput) {
@@ -221,16 +216,14 @@ const normalizeImage = Effect.fnUntraced(function* (image: ImageInput) {
   })
 })
 
-export const makeWebsite = Effect.fnUntraced(function* (
-  website: MetadataInput
-) {
+export const makeWebsite = Effect.fnUntraced(function* (website: WebsiteInput) {
   const url = yield* decodeUrl(website.url)
   const video = website.video ? yield* decodeUrl(website.video) : undefined
   const image = yield* Effect.all(
     Array.ensure(website.image).map(normalizeImage)
   )
-  return yield* validateMetadata(
-    Metadata.make({
+  return yield* Schema.validate(WebsiteMetadata)(
+    WebsiteMetadata.make({
       ...website,
       url,
       video,
@@ -243,11 +236,13 @@ export const makeWebsite = Effect.fnUntraced(function* (
 export const makeArticle = Effect.fnUntraced(function* (article: ArticleInput) {
   const url = yield* decodeUrl(article.url)
   const video = article.video ? yield* decodeUrl(article.video) : undefined
-  const author = article.author ? yield* decodeUrl(article.author) : undefined
+  const author = article.author
+    ? yield* Effect.all(Array.ensure(article.author).map(decodeUrl))
+    : undefined
   const image = yield* Effect.all(
     Array.ensure(article.image).map(normalizeImage)
   )
-  return yield* validateArticle(
+  return yield* Schema.validate(Article)(
     Article.make({
       ...article,
       url,
@@ -264,6 +259,6 @@ export type MetaTag = Readonly<{ property: string; content: string }>
 export const toMetaTags = (schema: OgSchema): ReadonlyArray<MetaTag> =>
   Match.value(schema).pipe(
     Match.tag(id('Article'), renderTaggedClass(Article)),
-    Match.tag(id('Metadata'), renderTaggedClass(Metadata)),
+    Match.tag(id('WebsiteMetadata'), renderTaggedClass(WebsiteMetadata)),
     Match.exhaustive
   )

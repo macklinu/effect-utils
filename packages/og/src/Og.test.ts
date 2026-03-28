@@ -85,6 +85,91 @@ it.effect('optional fields are omitted from meta tags', () =>
   })
 )
 
+it.effect('fully-populated website produces all expected meta tags', () =>
+  Effect.gen(function* () {
+    const metadata = yield* Og.makeWebsite({
+      title: 'Full',
+      url: 'https://example.com',
+      audio: 'https://example.com/audio.mp3',
+      description: 'A description',
+      determiner: 'the',
+      image: {
+        url: 'https://example.com/og.png',
+        secureUrl: 'https://example.com/og.png',
+        width: 1200,
+        height: 630,
+        type: 'image/png',
+        alt: 'Alt text',
+      },
+      locale: { default: 'en_US', alternate: ['fr_FR'] },
+      siteName: 'Example',
+      video: 'https://example.com/video.mp4',
+    })
+    const tags = Og.toMetaTags(metadata)
+    const properties = tags.map(({ property }) => property)
+    expect(properties).toEqual(
+      expect.arrayContaining([
+        'og:type',
+        'og:title',
+        'og:url',
+        'og:audio',
+        'og:description',
+        'og:determiner',
+        'og:image',
+        'og:image:secure_url',
+        'og:image:width',
+        'og:image:height',
+        'og:image:type',
+        'og:image:alt',
+        'og:locale',
+        'og:locale:alternate',
+        'og:site_name',
+        'og:video',
+      ])
+    )
+    expect(tags).toHaveLength(16)
+  })
+)
+
+it.effect('fully-populated article produces all expected meta tags', () =>
+  Effect.gen(function* () {
+    const article = yield* Og.makeArticle({
+      title: 'Full Article',
+      url: 'https://example.com/post',
+      publishedTime: DateTime.unsafeMake('2025-06-15'),
+      modifiedTime: DateTime.unsafeMake('2025-06-16'),
+      expirationTime: DateTime.unsafeMake('2026-06-15'),
+      author: 'https://example.com/authors/test',
+      section: 'Tech',
+      tags: ['a', 'b'],
+      image: {
+        url: 'https://example.com/og.png',
+        width: 1200,
+        height: 630,
+      },
+    })
+    const metaTags = Og.toMetaTags(article)
+    const properties = metaTags.map(({ property }) => property)
+    expect(properties).toEqual(
+      expect.arrayContaining([
+        'og:type',
+        'og:title',
+        'og:url',
+        'og:image',
+        'og:image:width',
+        'og:image:height',
+        'article:published_time',
+        'article:modified_time',
+        'article:expiration_time',
+        'article:author',
+        'article:section',
+        'article:tag',
+      ])
+    )
+    expect(metaTags).toHaveLength(13)
+  })
+)
+
 it.prop(
   'toMetaTags always includes required properties for articles',
   [Arbitrary.make(Og.Article)],
@@ -104,7 +189,7 @@ it.prop(
 
 it.prop(
   'toMetaTags always includes required properties for websites',
-  [Arbitrary.make(Og.Metadata)],
+  [Arbitrary.make(Og.WebsiteMetadata)],
   ([metadata]) => {
     const tags = Og.toMetaTags(metadata)
     const properties = tags.map(({ property }) => property)

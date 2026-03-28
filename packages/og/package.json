@@ -48,9 +48,15 @@
     "url": "git+https://github.com/macklinu/effect-utils.git",
     "directory": "packages/og"
   },
+  "sideEffects": false,
   "peerDependencies": {
     "effect": "^3.19.0",
     "react": "^19"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",

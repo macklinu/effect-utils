@@ -1,6 +1,6 @@
 # @macklinu/effect-og
 
-> A module for working with Open Graph](https://ogp.me/) metadata in [Effect](https://effect.website/)
+> A module for working with [Open Graph](https://ogp.me/) metadata in [Effect](https://effect.website/)
 
 ## Installation
 
@@ -56,7 +56,10 @@ const program = Effect.gen(function* () {
     title: 'How to Use Effect',
     url: 'https://example.com/blog/effect',
     publishedTime: DateTime.unsafeMake('2025-12-20'),
-    author: 'https://example.com/authors/macklinu',
+    author: [
+      'https://example.com/authors/macklinu',
+      'https://example.com/authors/other',
+    ],
     section: 'Technology',
     tags: ['effect', 'typescript'],
     image: [
@@ -105,5 +108,5 @@ Both constructors return `Effect<T, ParseError, never>`, validating inputs and s
 | `Og.makeArticle(input)`    | Construct validated article metadata                       |
 | `Og.toMetaTags(schema)`    | Convert metadata to `ReadonlyArray<{ property, content }>` |
 | `Og.Article`               | Effect Schema class for article metadata                   |
-| `Og.Metadata`              | Effect Schema class for website metadata                   |
+| `Og.WebsiteMetadata`       | Effect Schema class for website metadata                   |
 | `<MetaTags of={schema} />` | React component (`@macklinu/effect-og/react`)              |
