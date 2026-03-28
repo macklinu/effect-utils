@@ -2,7 +2,6 @@ import { expect, it } from '@effect/vitest'
 import * as Arbitrary from 'effect/Arbitrary'
 import * as DateTime from 'effect/DateTime'
 import * as Effect from 'effect/Effect'
-import * as Exit from 'effect/Exit'
 
 import * as Og from './Og'
 
@@ -10,8 +9,8 @@ it.effect('makeWebsite sets og:type to website', () =>
   Effect.gen(function* () {
     const metadata = yield* Og.makeWebsite({
       title: 'My Site',
-      url: 'https://example.com',
-      image: { url: 'https://example.com/og.png' },
+      url: new URL('https://example.com'),
+      image: { url: new URL('https://example.com/og.png') },
     })
     const tags = Og.toMetaTags(metadata)
     expect(tags).toContainEqual({ property: 'og:type', content: 'website' })
@@ -27,9 +26,9 @@ it.effect('makeArticle sets og:type to article', () =>
   Effect.gen(function* () {
     const article = yield* Og.makeArticle({
       title: 'My Post',
-      url: 'https://example.com/post',
+      url: new URL('https://example.com/post'),
       publishedTime: DateTime.unsafeMake('2025-06-15'),
-      image: { url: 'https://example.com/og.png' },
+      image: { url: new URL('https://example.com/og.png') },
     })
     const tags = Og.toMetaTags(article)
     expect(tags).toContainEqual({ property: 'og:type', content: 'article' })
@@ -40,25 +39,14 @@ it.effect('makeArticle sets og:type to article', () =>
   })
 )
 
-it.effect('makeWebsite fails on invalid URL', () =>
-  Effect.gen(function* () {
-    const exit = yield* Og.makeWebsite({
-      title: 'Bad',
-      url: 'not a url',
-      image: { url: 'https://example.com/og.png' },
-    }).pipe(Effect.exit)
-    expect(Exit.isFailure(exit)).toBe(true)
-  })
-)
-
 it.effect('multiple images produce multiple og:image tags', () =>
   Effect.gen(function* () {
     const metadata = yield* Og.makeWebsite({
       title: 'Multi',
-      url: 'https://example.com',
+      url: new URL('https://example.com'),
       image: [
-        { url: 'https://example.com/a.png', width: 800 },
-        { url: 'https://example.com/b.png', width: 600 },
+        { url: new URL('https://example.com/a.png'), width: 800 },
+        { url: new URL('https://example.com/b.png'), width: 600 },
       ],
     })
     const imageTags = Og.toMetaTags(metadata).filter(
@@ -75,8 +63,8 @@ it.effect('optional fields are omitted from meta tags', () =>
   Effect.gen(function* () {
     const metadata = yield* Og.makeWebsite({
       title: 'Minimal',
-      url: 'https://example.com',
-      image: { url: 'https://example.com/og.png' },
+      url: new URL('https://example.com'),
+      image: { url: new URL('https://example.com/og.png') },
     })
     const properties = Og.toMetaTags(metadata).map(({ property }) => property)
     expect(properties).not.toContain('og:description')

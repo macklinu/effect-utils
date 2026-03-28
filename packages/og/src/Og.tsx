@@ -29,7 +29,7 @@ declare module 'effect/Schema' {
 const forEncodingOnly = <const Self extends string>(self: Self) =>
   Schema.optionalWith(Schema.Literal(self), { default: () => self })
 
-class Image extends Schema.TaggedClass<Image>(id('Image'))(id('Image'), {
+export class Image extends Schema.TaggedClass<Image>(id('Image'))(id('Image'), {
   url: Schema.URL.annotations(openGraphProperty('og:image')),
   secureUrl: Schema.optional(Schema.URL).annotations(
     openGraphProperty('og:image:secure_url')
@@ -50,12 +50,15 @@ class Image extends Schema.TaggedClass<Image>(id('Image'))(id('Image'), {
   static readonly is = Schema.is(Image)
 }
 
-class Locale extends Schema.TaggedClass<Locale>(id('Locale'))(id('Locale'), {
-  default: Schema.String.annotations(openGraphProperty('og:locale')),
-  alternate: Schema.optional(Schema.Array(Schema.String)).annotations(
-    openGraphProperty('og:locale:alternate')
-  ),
-}) {
+export class Locale extends Schema.TaggedClass<Locale>(id('Locale'))(
+  id('Locale'),
+  {
+    default: Schema.String.annotations(openGraphProperty('og:locale')),
+    alternate: Schema.optional(Schema.Array(Schema.String)).annotations(
+      openGraphProperty('og:locale:alternate')
+    ),
+  }
+) {
   static readonly is = Schema.is(Locale)
 }
 
@@ -178,88 +181,35 @@ export type OgSchema = typeof OgSchema.Type
 const validateMetadata = Schema.validate(Metadata)
 const validateArticle = Schema.validate(Article)
 
-type UrlInput = string | URL
-
-const decodeUrl = (value: UrlInput) =>
-  value instanceof URL
-    ? Effect.succeed(value)
-    : Schema.decodeUnknown(Schema.URL)(value)
-
-interface ImageInput {
-  readonly url: UrlInput
-  readonly secureUrl?: UrlInput
-  readonly width?: number
-  readonly height?: number
-  readonly type?: string
-  readonly alt?: string
-}
-
-const normalizeImage = Effect.fnUntraced(function* (image: ImageInput) {
-  return Image.make({
-    ...image,
-    url: yield* decodeUrl(image.url),
-    secureUrl: image.secureUrl ? yield* decodeUrl(image.secureUrl) : undefined,
-  })
-})
-
-interface LocaleInput {
-  readonly default: string
-  readonly alternate?: ReadonlyArray<string>
-}
-
-interface MetadataInput {
-  readonly title: string
-  readonly url: UrlInput
-  readonly audio?: string
-  readonly description?: string
-  readonly determiner?: 'a' | 'an' | 'the' | '' | 'auto'
+type ImageInput = Omit<Image, '_tag'>
+type LocaleInput = Omit<Locale, '_tag'>
+type MetadataInput = Omit<Metadata, '_tag' | 'type' | 'image' | 'locale'> & {
   readonly image: ImageInput | ReadonlyArray<ImageInput>
   readonly locale?: LocaleInput
-  readonly siteName?: string
-  readonly video?: UrlInput
+}
+type ArticleInput = Omit<Article, '_tag' | 'type' | 'image' | 'locale'> & {
+  readonly image: ImageInput | ReadonlyArray<ImageInput>
+  readonly locale?: LocaleInput
 }
 
 export const makeWebsite = Effect.fnUntraced(function* (
   website: MetadataInput
 ) {
-  const url = yield* decodeUrl(website.url)
-  const video = website.video ? yield* decodeUrl(website.video) : undefined
-  const image = yield* Effect.all(
-    Array.ensure(website.image).map(normalizeImage)
-  )
+  const image = Array.ensure(website.image).map((img) => Image.make(img))
   return yield* validateMetadata(
     Metadata.make({
       ...website,
-      url,
-      video,
       image,
       locale: website.locale ? Locale.make(website.locale) : undefined,
     })
   )
 })
 
-interface ArticleInput extends Omit<MetadataInput, 'determiner'> {
-  readonly publishedTime: DateTime.Utc
-  readonly modifiedTime?: DateTime.Utc
-  readonly expirationTime?: DateTime.Utc
-  readonly author?: UrlInput
-  readonly section?: string
-  readonly tags?: ReadonlyArray<string>
-}
-
 export const makeArticle = Effect.fnUntraced(function* (article: ArticleInput) {
-  const url = yield* decodeUrl(article.url)
-  const video = article.video ? yield* decodeUrl(article.video) : undefined
-  const author = article.author ? yield* decodeUrl(article.author) : undefined
-  const image = yield* Effect.all(
-    Array.ensure(article.image).map(normalizeImage)
-  )
+  const image = Array.ensure(article.image).map((img) => Image.make(img))
   return yield* validateArticle(
     Article.make({
       ...article,
-      url,
-      video,
-      author,
       image,
       locale: article.locale ? Locale.make(article.locale) : undefined,
     })

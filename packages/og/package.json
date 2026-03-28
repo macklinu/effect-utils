@@ -15,16 +15,14 @@
     "./react": {
       "@macklinu/source": "./src/react.tsx",
       "default": "./dist/react.mjs"
-    },
-    "./*": "./*"
+    }
   },
   "publishConfig": {
     "provenance": true,
     "exports": {
       ".": "./dist/index.mjs",
       "./Og": "./dist/Og.mjs",
-      "./react": "./dist/react.mjs",
-      "./*": "./*"
+      "./react": "./dist/react.mjs"
     }
   },
   "main": "./dist/index.mjs",
@@ -38,7 +36,14 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": [],
+  "keywords": [
+    "effect",
+    "open-graph",
+    "og",
+    "metadata",
+    "seo",
+    "react"
+  ],
   "author": "Mackie Underdown <macklinu@gmail.com>",
   "license": "MIT",
   "repository": {
