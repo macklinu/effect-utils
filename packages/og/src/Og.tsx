@@ -181,24 +181,59 @@ export type OgSchema = typeof OgSchema.Type
 const validateMetadata = Schema.validate(Metadata)
 const validateArticle = Schema.validate(Article)
 
-type ImageInput = Omit<Image, '_tag'>
+type UrlInput = string | URL
+
+const decodeUrl = (value: UrlInput) =>
+  value instanceof URL
+    ? Effect.succeed(value)
+    : Schema.decodeUnknown(Schema.URL)(value)
+
+type WithUrlInput<T> = {
+  readonly [K in keyof T]: [T[K]] extends [URL]
+    ? UrlInput
+    : [T[K]] extends [URL | undefined]
+      ? UrlInput | undefined
+      : T[K]
+}
+
+type ImageInput = WithUrlInput<Omit<Image, '_tag'>>
 type LocaleInput = Omit<Locale, '_tag'>
-type MetadataInput = Omit<Metadata, '_tag' | 'type' | 'image' | 'locale'> & {
+type MetadataInput = Omit<
+  WithUrlInput<Metadata>,
+  '_tag' | 'type' | 'image' | 'locale'
+> & {
   readonly image: ImageInput | ReadonlyArray<ImageInput>
   readonly locale?: LocaleInput
 }
-type ArticleInput = Omit<Article, '_tag' | 'type' | 'image' | 'locale'> & {
+type ArticleInput = Omit<
+  WithUrlInput<Article>,
+  '_tag' | 'type' | 'image' | 'locale'
+> & {
   readonly image: ImageInput | ReadonlyArray<ImageInput>
   readonly locale?: LocaleInput
 }
 
+const normalizeImage = Effect.fnUntraced(function* (image: ImageInput) {
+  return Image.make({
+    ...image,
+    url: yield* decodeUrl(image.url),
+    secureUrl: image.secureUrl ? yield* decodeUrl(image.secureUrl) : undefined,
+  })
+})
+
 export const makeWebsite = Effect.fnUntraced(function* (
   website: MetadataInput
 ) {
-  const image = Array.ensure(website.image).map((img) => Image.make(img))
+  const url = yield* decodeUrl(website.url)
+  const video = website.video ? yield* decodeUrl(website.video) : undefined
+  const image = yield* Effect.all(
+    Array.ensure(website.image).map(normalizeImage)
+  )
   return yield* validateMetadata(
     Metadata.make({
       ...website,
+      url,
+      video,
       image,
       locale: website.locale ? Locale.make(website.locale) : undefined,
     })
@@ -206,10 +241,18 @@ export const makeWebsite = Effect.fnUntraced(function* (
 })
 
 export const makeArticle = Effect.fnUntraced(function* (article: ArticleInput) {
-  const image = Array.ensure(article.image).map((img) => Image.make(img))
+  const url = yield* decodeUrl(article.url)
+  const video = article.video ? yield* decodeUrl(article.video) : undefined
+  const author = article.author ? yield* decodeUrl(article.author) : undefined
+  const image = yield* Effect.all(
+    Array.ensure(article.image).map(normalizeImage)
+  )
   return yield* validateArticle(
     Article.make({
       ...article,
+      url,
+      video,
+      author,
       image,
       locale: article.locale ? Locale.make(article.locale) : undefined,
     })

@@ -10,8 +10,8 @@ it.effect('MetaTags renders meta elements from OG metadata', () =>
     const article = yield* Og.makeArticle({
       title: 'Test',
       publishedTime: DateTime.unsafeMake('2025-01-01'),
-      url: new URL('https://example.com'),
-      image: { url: new URL('https://example.com/og.png') },
+      url: 'https://example.com',
+      image: { url: 'https://example.com/og.png' },
     })
     expect(MetaTags({ of: article })).toMatchInlineSnapshot(`
       <React.Fragment>
