@@ -78,6 +78,34 @@ const program = Effect.gen(function* () {
 })
 ```
 
+### Twitter Card metadata
+
+`Og.withTwitter` attaches Twitter Card meta tags to any `OgData` value. Only `card` is required - Twitter falls back to `og:title`, `og:description`, and `og:image` automatically, so you only need to add extra fields to explicitly override those.
+
+```ts
+import * as Effect from 'effect/Effect'
+
+import { Og } from '@macklinu/effect-og'
+
+const program = Effect.gen(function* () {
+  // data-first
+  const data = yield* Og.makeWebsite({ ... })
+  const withCard = yield* Og.withTwitter(data, { card: 'summary_large_image' })
+
+  // data-last (pipeable)
+  const withCard = yield* Og.makeArticle({ ... }).pipe(
+    Effect.flatMap(
+      Og.withTwitter({ card: 'summary', site: '@example' })
+    )
+  )
+
+  Og.toMetaTags(withCard)
+  // [...og tags...,
+  //  { property: "twitter:card", content: "summary" },
+  //  { property: "twitter:site", content: "@example" }]
+})
+```
+
 ### Rendering to React
 
 ```tsx
@@ -88,6 +116,7 @@ import { MetaTags } from '@macklinu/effect-og/react'
 ;<MetaTags of={article} />
 // Renders: <meta property="og:type" content="article" />
 //          <meta property="og:title" content="How to Use Effect" />
+//          <meta name="twitter:card" content="summary" />
 //          ...
 ```
 
@@ -102,11 +131,13 @@ Both constructors return `Effect<T, ParseError, never>`, validating inputs and s
 
 ## API
 
-| Export                     | Description                                                |
-| -------------------------- | ---------------------------------------------------------- |
-| `Og.makeWebsite(input)`    | Construct validated website metadata                       |
-| `Og.makeArticle(input)`    | Construct validated article metadata                       |
-| `Og.toMetaTags(schema)`    | Convert metadata to `ReadonlyArray<{ property, content }>` |
-| `Og.Article`               | Effect Schema class for article metadata                   |
-| `Og.WebsiteMetadata`       | Effect Schema class for website metadata                   |
-| `<MetaTags of={schema} />` | React component (`@macklinu/effect-og/react`)              |
+| Export                   | Description                                                |
+| ------------------------ | ---------------------------------------------------------- |
+| `Og.makeWebsite(input)`  | Construct validated website metadata                       |
+| `Og.makeArticle(input)`  | Construct validated article metadata                       |
+| `Og.withTwitter(input)`  | Attach Twitter Card tags to an `OgData` value (dual)       |
+| `Og.toMetaTags(data)`    | Convert metadata to `ReadonlyArray<{ property, content }>` |
+| `Og.Article`             | Effect Schema class for article metadata                   |
+| `Og.WebsiteMetadata`     | Effect Schema class for website metadata                   |
+| `Og.Twitter`             | Effect Schema class for Twitter Card metadata              |
+| `<MetaTags of={data} />` | React component (`@macklinu/effect-og/react`)              |
