@@ -8,12 +8,12 @@ import * as Og from './Og'
 
 it.effect('makeWebsite sets og:type to website', () =>
   Effect.gen(function* () {
-    const metadata = yield* Og.makeWebsite({
+    const data = yield* Og.makeWebsite({
       title: 'My Site',
       url: 'https://example.com',
       image: { url: 'https://example.com/og.png' },
     })
-    const tags = Og.toMetaTags(metadata)
+    const tags = Og.toMetaTags(data)
     expect(tags).toContainEqual({ property: 'og:type', content: 'website' })
     expect(tags).toContainEqual({ property: 'og:title', content: 'My Site' })
     expect(tags).toContainEqual({
@@ -25,13 +25,13 @@ it.effect('makeWebsite sets og:type to website', () =>
 
 it.effect('makeArticle sets og:type to article', () =>
   Effect.gen(function* () {
-    const article = yield* Og.makeArticle({
+    const data = yield* Og.makeArticle({
       title: 'My Post',
       url: 'https://example.com/post',
       publishedTime: DateTime.unsafeMake('2025-06-15'),
       image: { url: 'https://example.com/og.png' },
     })
-    const tags = Og.toMetaTags(article)
+    const tags = Og.toMetaTags(data)
     expect(tags).toContainEqual({ property: 'og:type', content: 'article' })
     expect(tags).toContainEqual({
       property: 'article:published_time',
@@ -53,7 +53,7 @@ it.effect('makeWebsite fails on invalid URL', () =>
 
 it.effect('multiple images produce multiple og:image tags', () =>
   Effect.gen(function* () {
-    const metadata = yield* Og.makeWebsite({
+    const data = yield* Og.makeWebsite({
       title: 'Multi',
       url: 'https://example.com',
       image: [
@@ -61,7 +61,7 @@ it.effect('multiple images produce multiple og:image tags', () =>
         { url: 'https://example.com/b.png', width: 600 },
       ],
     })
-    const imageTags = Og.toMetaTags(metadata).filter(
+    const imageTags = Og.toMetaTags(data).filter(
       ({ property }) => property === 'og:image'
     )
     expect(imageTags).toEqual([
@@ -73,12 +73,12 @@ it.effect('multiple images produce multiple og:image tags', () =>
 
 it.effect('optional fields are omitted from meta tags', () =>
   Effect.gen(function* () {
-    const metadata = yield* Og.makeWebsite({
+    const data = yield* Og.makeWebsite({
       title: 'Minimal',
       url: 'https://example.com',
       image: { url: 'https://example.com/og.png' },
     })
-    const properties = Og.toMetaTags(metadata).map(({ property }) => property)
+    const properties = Og.toMetaTags(data).map(({ property }) => property)
     expect(properties).not.toContain('og:description')
     expect(properties).not.toContain('og:site_name')
     expect(properties).not.toContain('og:video')
@@ -87,7 +87,7 @@ it.effect('optional fields are omitted from meta tags', () =>
 
 it.effect('fully-populated website produces all expected meta tags', () =>
   Effect.gen(function* () {
-    const metadata = yield* Og.makeWebsite({
+    const data = yield* Og.makeWebsite({
       title: 'Full',
       url: 'https://example.com',
       audio: 'https://example.com/audio.mp3',
@@ -105,7 +105,7 @@ it.effect('fully-populated website produces all expected meta tags', () =>
       siteName: 'Example',
       video: 'https://example.com/video.mp4',
     })
-    const tags = Og.toMetaTags(metadata)
+    const tags = Og.toMetaTags(data)
     const properties = tags.map(({ property }) => property)
     expect(properties).toEqual(
       expect.arrayContaining([
@@ -133,7 +133,7 @@ it.effect('fully-populated website produces all expected meta tags', () =>
 
 it.effect('fully-populated article produces all expected meta tags', () =>
   Effect.gen(function* () {
-    const article = yield* Og.makeArticle({
+    const data = yield* Og.makeArticle({
       title: 'Full Article',
       url: 'https://example.com/post',
       publishedTime: DateTime.unsafeMake('2025-06-15'),
@@ -148,7 +148,7 @@ it.effect('fully-populated article produces all expected meta tags', () =>
         height: 630,
       },
     })
-    const metaTags = Og.toMetaTags(article)
+    const metaTags = Og.toMetaTags(data)
     const properties = metaTags.map(({ property }) => property)
     expect(properties).toEqual(
       expect.arrayContaining([
@@ -201,4 +201,118 @@ it.prop(
       'website'
     )
   }
+)
+
+it.effect('withTwitter data-first adds twitter meta tags', () =>
+  Effect.gen(function* () {
+    const data = yield* Og.makeWebsite({
+      title: 'My Site',
+      url: 'https://example.com',
+      image: { url: 'https://example.com/og.png' },
+    })
+    const withTwitter = yield* Og.withTwitter(data, {
+      card: 'summary_large_image',
+      site: '@example',
+      title: 'My Site',
+      description: 'A description',
+      image: 'https://example.com/og.png',
+      imageAlt: 'Alt text',
+    })
+    const tags = Og.toMetaTags(withTwitter)
+    expect(tags).toContainEqual({
+      property: 'twitter:card',
+      content: 'summary_large_image',
+    })
+    expect(tags).toContainEqual({
+      property: 'twitter:site',
+      content: '@example',
+    })
+    expect(tags).toContainEqual({
+      property: 'twitter:title',
+      content: 'My Site',
+    })
+    expect(tags).toContainEqual({
+      property: 'twitter:description',
+      content: 'A description',
+    })
+    expect(tags).toContainEqual({
+      property: 'twitter:image',
+      content: 'https://example.com/og.png',
+    })
+    expect(tags).toContainEqual({
+      property: 'twitter:image:alt',
+      content: 'Alt text',
+    })
+  })
+)
+
+it.effect('withTwitter data-last (pipeable) adds twitter meta tags', () =>
+  Effect.gen(function* () {
+    const data = yield* Og.makeArticle({
+      title: 'My Post',
+      url: 'https://example.com/post',
+      publishedTime: DateTime.unsafeMake('2025-06-15'),
+      image: { url: 'https://example.com/og.png' },
+    })
+    const withTwitter = yield* Effect.succeed(data).pipe(
+      Effect.flatMap(Og.withTwitter({ card: 'summary', site: '@example' }))
+    )
+    const tags = Og.toMetaTags(withTwitter)
+    expect(tags).toContainEqual({ property: 'og:type', content: 'article' })
+    expect(tags).toContainEqual({
+      property: 'twitter:card',
+      content: 'summary',
+    })
+    expect(tags).toContainEqual({
+      property: 'twitter:site',
+      content: '@example',
+    })
+  })
+)
+
+it.effect('withTwitter optional fields are omitted when not provided', () =>
+  Effect.gen(function* () {
+    const data = yield* Og.makeWebsite({
+      title: 'Minimal',
+      url: 'https://example.com',
+      image: { url: 'https://example.com/og.png' },
+    })
+    const withTwitter = yield* Og.withTwitter(data, { card: 'summary' })
+    const tags = Og.toMetaTags(withTwitter)
+    const properties = tags.map(({ property }) => property)
+    expect(properties).toContain('twitter:card')
+    expect(properties).not.toContain('twitter:site')
+    expect(properties).not.toContain('twitter:title')
+    expect(properties).not.toContain('twitter:description')
+    expect(properties).not.toContain('twitter:image')
+    expect(properties).not.toContain('twitter:image:alt')
+  })
+)
+
+it.effect('withTwitter fails on invalid twitter:site (missing @)', () =>
+  Effect.gen(function* () {
+    const data = yield* Og.makeWebsite({
+      title: 'My Site',
+      url: 'https://example.com',
+      image: { url: 'https://example.com/og.png' },
+    })
+    const exit = yield* Og.withTwitter(data, {
+      card: 'summary',
+      site: 'example' as `@${string}`,
+    }).pipe(Effect.exit)
+    expect(Exit.isFailure(exit)).toBe(true)
+  })
+)
+
+it.effect('withTwitter does not mutate original OgData', () =>
+  Effect.gen(function* () {
+    const data = yield* Og.makeWebsite({
+      title: 'My Site',
+      url: 'https://example.com',
+      image: { url: 'https://example.com/og.png' },
+    })
+    const withTwitter = yield* Og.withTwitter(data, { card: 'summary' })
+    expect(data.twitter).toBeUndefined()
+    expect(withTwitter.twitter).toBeDefined()
+  })
 )

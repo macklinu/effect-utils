@@ -83,7 +83,9 @@ export class WebsiteMetadata extends Schema.TaggedClass<WebsiteMetadata>(
     openGraphProperty('og:site_name')
   ),
   video: Schema.optional(Schema.URL).annotations(openGraphProperty('og:video')),
-}) {}
+}) {
+  static readonly is = Schema.is(WebsiteMetadata)
+}
 
 export class Article extends Schema.TaggedClass<Article>(id('Article'))(
   id('Article'),
@@ -130,6 +132,32 @@ const renderContent = Match.type<string | number | URL | DateTime.Utc>().pipe(
   Match.exhaustive
 )
 
+export class Twitter extends Schema.TaggedClass<Twitter>(id('Twitter'))(
+  id('Twitter'),
+  {
+    card: Schema.Literal('summary', 'summary_large_image').annotations(
+      openGraphProperty('twitter:card')
+    ),
+    site: Schema.optional(
+      Schema.String.pipe(Schema.startsWith('@'))
+    ).annotations(openGraphProperty('twitter:site')),
+    title: Schema.optional(Schema.String).annotations(
+      openGraphProperty('twitter:title')
+    ),
+    description: Schema.optional(Schema.String).annotations(
+      openGraphProperty('twitter:description')
+    ),
+    image: Schema.optional(Schema.URL).annotations(
+      openGraphProperty('twitter:image')
+    ),
+    imageAlt: Schema.optional(Schema.String).annotations(
+      openGraphProperty('twitter:image:alt')
+    ),
+  }
+) {
+  static readonly is = Schema.is(Twitter)
+}
+
 const renderTaggedClass =
   <F extends Schema.Struct.Fields>(classType: { fields: F }) =>
   (instance: Record<string, any>): ReadonlyArray<MetaTag> => {
@@ -174,6 +202,15 @@ const renderTaggedClass =
 
 export const OgSchema = Schema.Union(Article, WebsiteMetadata)
 export type OgSchema = typeof OgSchema.Type
+const isOgSchema = (u: unknown): u is OgSchema =>
+  Article.is(u) || WebsiteMetadata.is(u)
+
+export class OgData extends Schema.Class<OgData>(id('OgData'))({
+  og: OgSchema,
+  twitter: Schema.optional(Twitter),
+}) {
+  static readonly is = Schema.is(OgData)
+}
 
 type UrlInput = string | URL
 
@@ -208,6 +245,8 @@ type ArticleInput = Omit<
   readonly author?: UrlInput | ReadonlyArray<UrlInput>
 }
 
+type TwitterInput = Omit<WithUrlInput<Twitter>, '_tag'>
+
 const normalizeImage = Effect.fnUntraced(function* (image: ImageInput) {
   return Image.make({
     ...image,
@@ -216,13 +255,15 @@ const normalizeImage = Effect.fnUntraced(function* (image: ImageInput) {
   })
 })
 
-export const makeWebsite = Effect.fnUntraced(function* (website: WebsiteInput) {
+export const makeWebsite = Effect.fn('Og.makeWebsite')(function* (
+  website: WebsiteInput
+) {
   const url = yield* decodeUrl(website.url)
   const video = website.video ? yield* decodeUrl(website.video) : undefined
   const image = yield* Effect.all(
     Array.ensure(website.image).map(normalizeImage)
   )
-  return yield* Schema.validate(WebsiteMetadata)(
+  const og = yield* Schema.validate(WebsiteMetadata)(
     WebsiteMetadata.make({
       ...website,
       url,
@@ -231,9 +272,12 @@ export const makeWebsite = Effect.fnUntraced(function* (website: WebsiteInput) {
       locale: website.locale ? Locale.make(website.locale) : undefined,
     })
   )
+  return OgData.make({ og })
 })
 
-export const makeArticle = Effect.fnUntraced(function* (article: ArticleInput) {
+export const makeArticle = Effect.fn('Og.makeArticle')(function* (
+  article: ArticleInput
+) {
   const url = yield* decodeUrl(article.url)
   const video = article.video ? yield* decodeUrl(article.video) : undefined
   const author = article.author
@@ -242,7 +286,7 @@ export const makeArticle = Effect.fnUntraced(function* (article: ArticleInput) {
   const image = yield* Effect.all(
     Array.ensure(article.image).map(normalizeImage)
   )
-  return yield* Schema.validate(Article)(
+  const og = yield* Schema.validate(Article)(
     Article.make({
       ...article,
       url,
@@ -252,13 +296,45 @@ export const makeArticle = Effect.fnUntraced(function* (article: ArticleInput) {
       locale: article.locale ? Locale.make(article.locale) : undefined,
     })
   )
+  return OgData.make({ og })
 })
+
+const normalizeTwitter = Effect.fnUntraced(function* (input: TwitterInput) {
+  const image = input.image ? yield* decodeUrl(input.image) : undefined
+  return yield* Schema.validate(Twitter)(
+    Twitter.make({
+      ...input,
+      image,
+    })
+  )
+})
+
+export const withTwitter: {
+  (twitter: TwitterInput): (data: OgData) => Effect.Effect<OgData, unknown>
+  (data: OgData, twitter: TwitterInput): Effect.Effect<OgData, unknown>
+} = Function.dual(
+  2,
+  Effect.fn('Og.withTwitter')(function* (data: OgData, twitter: TwitterInput) {
+    return {
+      ...data,
+      twitter: yield* normalizeTwitter(twitter),
+    }
+  })
+)
 
 export type MetaTag = Readonly<{ property: string; content: string }>
 
-export const toMetaTags = (schema: OgSchema): ReadonlyArray<MetaTag> =>
-  Match.value(schema).pipe(
+export const toMetaTags = (data: OgData | OgSchema): ReadonlyArray<MetaTag> => {
+  const ogData = isOgSchema(data) ? OgData.make({ og: data }) : data
+
+  const ogTags = Match.value(ogData.og).pipe(
     Match.tag(id('Article'), renderTaggedClass(Article)),
     Match.tag(id('WebsiteMetadata'), renderTaggedClass(WebsiteMetadata)),
     Match.exhaustive
   )
+  const twitterTags = ogData.twitter
+    ? renderTaggedClass(Twitter)(ogData.twitter)
+    : []
+
+  return [...ogTags, ...twitterTags]
+}
