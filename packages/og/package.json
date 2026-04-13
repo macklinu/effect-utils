@@ -1,6 +1,6 @@
 {
   "name": "@macklinu/effect-og",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A module for working with Open Graph metadata in Effect",
   "type": "module",
   "exports": {
